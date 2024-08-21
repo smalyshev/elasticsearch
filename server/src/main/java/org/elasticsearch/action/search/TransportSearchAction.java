@@ -1516,7 +1516,7 @@ public class TransportSearchAction extends HandledTransportAction<SearchRequest,
      * @return true if this is an async search task; false if a synchronous search task
      */
     private boolean isAsyncSearchTask(SearchTask searchTask) {
-        assert assertAsyncSearchTaskListener(searchTask) : "AsyncSearchTask SearchProgressListener name has ";
+        assert assertAsyncSearchTaskListener(searchTask) : "AsyncSearchTask SearchProgressListener is not one of the expected types";
         // AsyncSearchTask will not return SearchProgressListener.NOOP, since it uses its own progress listener
         // which delegates to CCSSingleCoordinatorSearchProgressListener when minimizing roundtrips.
         // Only synchronous SearchTask uses SearchProgressListener.NOOP or CCSSingleCoordinatorSearchProgressListener directly
