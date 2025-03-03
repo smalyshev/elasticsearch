@@ -110,7 +110,8 @@ List projects = [
   'test:x-content',
   'test:yaml-rest-runner',
   'test:metadata-extractor',
-  'test:immutable-collections-patch'
+  'test:immutable-collections-patch',
+  'fuzzer'
 ]
 
 /**
@@ -168,3 +169,4 @@ if (extraProjects.exists()) {
     addSubProjects('', extraProjectDir)
   }
 }
+
