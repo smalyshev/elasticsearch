@@ -83,6 +83,8 @@ public class ActionLogger<Context extends ActionLoggerContext> {
         var context = new ActionLoggingFieldsContext(true);
         this.name = name;
         this.additionalFields = fieldsProvider.create(context);
+        this.enabled = settings.get(ACTION_LOGGER_ENABLED.getConcreteSettingForNamespace(name));
+        LOGGER.info("action logging for {} is: {}", name, enabled);
         settings.addAffixUpdateConsumer(ACTION_LOGGER_ENABLED, updater(name, v -> enabled = v), (k, v) -> {});
         settings.addAffixUpdateConsumer(ACTION_LOGGER_THRESHOLD, updater(name, v -> threshold = v.nanos()), (k, v) -> {});
         settings.addAffixUpdateConsumer(ACTION_LOGGER_LEVEL, updater(name, v -> logLevel = v), (k, v) -> {
