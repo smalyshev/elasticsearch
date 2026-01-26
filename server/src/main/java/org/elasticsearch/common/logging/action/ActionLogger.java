@@ -9,6 +9,8 @@
 
 package org.elasticsearch.common.logging.action;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.DelegatingActionListener;
 import org.elasticsearch.common.settings.ClusterSettings;
@@ -37,6 +39,8 @@ public class ActionLogger<Context extends ActionLoggerContext> {
     private boolean enabled = false;
     private long threshold = -1;
     private Level logLevel = Level.INFO;
+
+    private static final Logger LOGGER = LogManager.getLogger(ActionLogger.class);
 
     public static final String ACTION_LOGGER_SETTINGS_PREFIX = "elasticsearch.actionlog.";
     public static final Setting.AffixSetting<Boolean> ACTION_LOGGER_ENABLED = Setting.affixKeySetting(
@@ -93,23 +97,31 @@ public class ActionLogger<Context extends ActionLoggerContext> {
 
     // Accessible for tests
     void logAction(Context context) {
+        LOGGER.info("About to log action");
         if (enabled == false || (threshold > -1 && context.getTookInNanos() < threshold)) {
+            LOGGER.info("Not enabled, not logging");
             return;
         }
         Level level = producer.logLevel(context, logLevel);
         if (level.equals(Level.OFF)) {
+            LOGGER.info("Logger off, not logging");
             return;
         }
         var event = producer.produce(context, additionalFields);
         if (event != null) {
+            LOGGER.info(event);
             writer.write(level, event);
+        } else {
+            LOGGER.info("Null event, not logging");
         }
     }
 
     public <Req, R> ActionListener<R> wrap(ActionListener<R> listener, final ActionLoggerContextBuilder<Context, Req, R> contextBuilder) {
         if (enabled == false) {
+            LOGGER.info("action logging is disabled");
             return listener;
         }
+        LOGGER.info("action logging is enabled");
         return new DelegatingActionListener<>(listener) {
             @Override
             public void onResponse(R r) {
