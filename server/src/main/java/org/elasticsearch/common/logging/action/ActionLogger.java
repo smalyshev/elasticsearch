@@ -69,6 +69,7 @@ public class ActionLogger<Context extends ActionLoggerContext> {
         "include.user",
         key -> boolSetting(key, true, Setting.Property.Dynamic, Setting.Property.NodeScope)
     );
+    private final String name;
 
     public ActionLogger(
         String name,
@@ -80,6 +81,7 @@ public class ActionLogger<Context extends ActionLoggerContext> {
         this.producer = producer;
         this.writer = writer;
         var context = new ActionLoggingFieldsContext(true);
+        this.name = name;
         this.additionalFields = fieldsProvider.create(context);
         settings.addAffixUpdateConsumer(ACTION_LOGGER_ENABLED, updater(name, v -> enabled = v), (k, v) -> {});
         settings.addAffixUpdateConsumer(ACTION_LOGGER_THRESHOLD, updater(name, v -> threshold = v.nanos()), (k, v) -> {});
@@ -92,7 +94,10 @@ public class ActionLogger<Context extends ActionLoggerContext> {
     }
 
     private <T> BiConsumer<String, T> updater(String name, Consumer<T> updater) {
-        return (k, v) -> { if (name.equals(k)) updater.accept(v); };
+        return (k, v) -> {
+            LOGGER.info("Updating {} setting for {} to {}", k, name, v);
+            if (name.equals(k)) updater.accept(v);
+        };
     }
 
     // Accessible for tests
@@ -118,10 +123,10 @@ public class ActionLogger<Context extends ActionLoggerContext> {
 
     public <Req, R> ActionListener<R> wrap(ActionListener<R> listener, final ActionLoggerContextBuilder<Context, Req, R> contextBuilder) {
         if (enabled == false) {
-            LOGGER.info("action logging is disabled");
+            LOGGER.info("action logging for {} is disabled", name);
             return listener;
         }
-        LOGGER.info("action logging is enabled");
+        LOGGER.info("action logging for {} is enabled", name);
         return new DelegatingActionListener<>(listener) {
             @Override
             public void onResponse(R r) {
